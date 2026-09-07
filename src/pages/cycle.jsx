@@ -15,21 +15,67 @@ import "./cycle.css";
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-const calendarRows = [
-  [{ day: 31, muted: true }, { day: 1 }, { day: 2 }, { day: 3 }, { day: 4 }, { day: 5 }, { day: 6 }],
-  [
-    { day: 7 },
-    { day: 8 },
-    { day: 9 },
-    { day: 10, predicted: true, selected: true },
-    { day: 11, predicted: true },
-    { day: 12, predicted: true },
-    { day: 13, predicted: true },
-  ],
-  [{ day: 14, period: true }, { day: 15 }, { day: 16 }, { day: 17 }, { day: 18, fertile: true }, { day: 19 }, { day: 20 }],
-  [{ day: 21 }, { day: 22 }, { day: 23 }, { day: 24 }, { day: 25 }, { day: 26 }, { day: 27 }],
-  [{ day: 28 }, { day: 29 }, { day: 30 }, { day: 1, muted: true }, { day: 2, muted: true }, { day: 3, muted: true }, { day: 4, muted: true }],
-];
+const getDateKey = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
+const getCalendarDates = (currentMonth) => {
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
+
+  const firstDay = new Date(year, month, 1);
+  const firstWeekday = firstDay.getDay();
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const totalCells = Math.ceil(
+    (firstWeekday + daysInMonth) / 7
+  ) * 7;
+
+  const dates = [];
+
+  for (let index = 0; index < totalCells; index++) {
+    const date = new Date(
+      year,
+      month,
+      index - firstWeekday + 1
+    );
+
+    const dateKey = getDateKey(date);
+
+    // Demo period data for June 2026
+    const predictedDates = [
+      "2026-06-10",
+      "2026-06-11",
+      "2026-06-12",
+      "2026-06-13",
+    ];
+
+    const periodDates = [
+      "2026-06-14",
+    ];
+
+    const fertileDates = [
+      "2026-06-18",
+    ];
+
+    dates.push({
+      day: date.getDate(),
+      date,
+      muted: date.getMonth() !== month,
+      predicted: predictedDates.includes(dateKey),
+      period: periodDates.includes(dateKey),
+      fertile: fertileDates.includes(dateKey),
+      selected: dateKey === "2026-06-10",
+    });
+  }
+
+  return dates;
+};
 
 const summaryCards = [
   { label: "Period Length", value: "5 Days", note: "Last: 5 Days", tone: "pink", icon: Droplet },
@@ -54,122 +100,6 @@ const navItems = [
   { label: "Profile", icon: UserRound },
 ];
 
-// const CyclePage = () => (
-//   <main className="cycle-page">
-//     <header className="cycle-header">
-//       <button className="cycle-header__button" type="button" aria-label="Go back">
-//         <ChevronLeft size={27} strokeWidth={2.6} />
-//       </button>
-//       <div className="cycle-header__title">
-//         <h1>Period Cycle Records</h1>
-//         <p>Track, understand &amp; care for yourself</p>
-//       </div>
-//       <button className="cycle-header__button" type="button" aria-label="Open insights">
-//         <BarChart3 size={25} strokeWidth={2.35} />
-//       </button>
-//     </header>
-
-//     <section className="calendar-card" aria-label="June 2026 period calendar">
-//       <div className="calendar-card__month">
-//         <button type="button" aria-label="Previous month">
-//           <ChevronLeft size={23} strokeWidth={3} />
-//         </button>
-//         <h2>June 2026</h2>
-//         <button type="button" aria-label="Next month">
-//           <ChevronRight size={23} strokeWidth={3} />
-//         </button>
-//       </div>
-
-//       <div className="calendar-card__weekdays">
-//         {WEEK_DAYS.map((day) => (
-//           <span key={day}>{day}</span>
-//         ))}
-//       </div>
-
-//       <div className="calendar-card__dates">
-//         {calendarRows.flat().map((date, index) => (
-//           <span
-//             key={`${date.day}-${index}`}
-//             className={[
-//               "calendar-card__date",
-//               date.muted ? "is-muted" : "",
-//               date.period ? "is-period" : "",
-//               date.predicted ? "is-predicted" : "",
-//               date.fertile ? "is-fertile" : "",
-//               date.selected ? "is-selected" : "",
-//             ].join(" ")}
-//           >
-//             {date.day}
-//           </span>
-//         ))}
-//       </div>
-
-//       <div className="calendar-card__legend">
-//         <span><i className="legend-dot legend-dot--period" />Period</span>
-//         <span><i className="legend-dot legend-dot--predicted" />Predicted Period</span>
-//         <span><i className="legend-dot legend-dot--fertile" />Fertile Window</span>
-//         <span><i className="legend-dot legend-dot--ovulation" />Ovulation</span>
-//       </div>
-//     </section>
-
-//     <section className="cycle-section-header">
-//       <h2>Cycle Summary</h2>
-//       <a href="#insights">View Insights <ChevronRight size={20} /></a>
-//     </section>
-
-//     <section className="summary-grid" aria-label="Cycle summary">
-//       {summaryCards.map(({ label, value, note, tone, icon: Icon }) => (
-//         <article className="summary-card" key={label}>
-//           <div className={`summary-card__icon summary-card__icon--${tone}`}>
-//             <Icon size={25} />
-//           </div>
-//           <p>{label}</p>
-//           <strong className={`summary-card__value summary-card__value--${tone}`}>{value}</strong>
-//           <span>{note}</span>
-//         </article>
-//       ))}
-//     </section>
-
-//     {/* <section className="cycle-section-header cycle-section-header--records">
-//       <h2>Your Period Records</h2>
-//       <button type="button"><CirclePlus size={20} /> Add Record</button>
-//     </section> */}
-
-//     <section className="records-list" aria-label="Period records">
-//       {records.map((record) => (
-//         <article className="record-card" key={record.range}>
-//           <div className="record-card__icon">
-//             <Droplet size={21} fill="currentColor" />
-//           </div>
-//           <div className="record-card__date">
-//             <h3>{record.range}</h3>
-//             <p>{record.days}</p>
-//           </div>
-//           <p className="record-card__cycle">Cycle: {record.cycle}</p>
-//           <ChevronRight className="record-card__arrow" size={23} />
-//         </article>
-//       ))}
-//     </section>
-
-//     <p className="privacy-note">
-//       <Lock size={16} fill="currentColor" /> Your data is private and secure
-//     </p>
-
-//     <button className="floating-button" type="button" aria-label="Add period record">
-//       <Plus size={38} />
-//     </button>
-
-//     <nav className="bottom-navigation" aria-label="Main navigation">
-//       {navItems.map(({ label, icon: Icon, active }) => (
-//         <a className={active ? "is-active" : ""} href={active ? "#records" : "#"} key={label}>
-//           <Icon size={27} strokeWidth={2.15} />
-//           <span>{label}</span>
-//         </a>
-//       ))}
-//     </nav>
-//   </main>
-// );
-
 
 import { useEffect, useState } from "react";
 
@@ -177,6 +107,14 @@ const CyclePage = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+
+  // Initialize currentMonth BEFORE using it
+  const [currentMonth, setCurrentMonth] = useState(
+    new Date(2026, 5, 1)
+  );
+
+  // Now it is safe to use currentMonth
+  const calendarDates = getCalendarDates(currentMonth);
 
   const openAddModal = () => {
     setIsAddModalOpen(true);
@@ -200,11 +138,29 @@ const CyclePage = () => {
       endDate,
     });
 
-    // Later you can replace this with your API call.
-
     setStartDate("");
     setEndDate("");
     setIsAddModalOpen(false);
+  };
+
+  const goToPreviousMonth = () => {
+    setCurrentMonth((previousMonth) =>
+      new Date(
+        previousMonth.getFullYear(),
+        previousMonth.getMonth() - 1,
+        1
+      )
+    );
+  };
+
+  const goToNextMonth = () => {
+    setCurrentMonth((previousMonth) =>
+      new Date(
+        previousMonth.getFullYear(),
+        previousMonth.getMonth() + 1,
+        1
+      )
+    );
   };
 
   // Close popup with Escape key
@@ -241,6 +197,19 @@ const CyclePage = () => {
           <p>Track, understand &amp; care for yourself</p>
         </div>
 
+
+              {/* <div className="calendar-card__month">
+          <button type="button" aria-label="Previous month">
+          <ChevronLeft size={23} strokeWidth={3} />
+              </button>
+
+
+
+        <button type="button" aria-label="Next month">
+          <ChevronRight size={23} strokeWidth={3} />
+        </button>
+        </div> */}
+
         <button
           className="cycle-header__button"
           type="button"
@@ -255,16 +224,35 @@ const CyclePage = () => {
         aria-label="June 2026 period calendar"
       >
         <div className="calendar-card__month">
-          <button type="button" aria-label="Previous month">
-            <ChevronLeft size={23} strokeWidth={3} />
-          </button>
+      <button
+        type="button"
+        aria-label="Previous month"
+        onClick={goToPreviousMonth}
+      >
+        <ChevronLeft
+          size={23}
+          strokeWidth={3}
+        />
+      </button>
 
-          <h2>June 2026</h2>
+  <h2>
+    {currentMonth.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    })}
+  </h2>
 
-          <button type="button" aria-label="Next month">
-            <ChevronRight size={23} strokeWidth={3} />
-          </button>
-        </div>
+  <button
+    type="button"
+    aria-label="Next month"
+    onClick={goToNextMonth}
+  >
+    <ChevronRight
+      size={23}
+      strokeWidth={3}
+    />
+  </button>
+</div>
 
         <div className="calendar-card__weekdays">
           {WEEK_DAYS.map((day) => (
@@ -273,22 +261,22 @@ const CyclePage = () => {
         </div>
 
         <div className="calendar-card__dates">
-          {calendarRows.flat().map((date, index) => (
-            <span
-              key={`${date.day}-${index}`}
-              className={[
-                "calendar-card__date",
-                date.muted ? "is-muted" : "",
-                date.period ? "is-period" : "",
-                date.predicted ? "is-predicted" : "",
-                date.fertile ? "is-fertile" : "",
-                date.selected ? "is-selected" : "",
-              ].join(" ")}
-            >
-              {date.day}
-            </span>
-          ))}
-        </div>
+  {calendarDates.map((date) => (
+    <span
+      key={getDateKey(date.date)}
+      className={[
+        "calendar-card__date",
+        date.muted ? "is-muted" : "",
+        date.period ? "is-period" : "",
+        date.predicted ? "is-predicted" : "",
+        date.fertile ? "is-fertile" : "",
+        date.selected ? "is-selected" : "",
+      ].join(" ")}
+    >
+      {date.day}
+    </span>
+  ))}
+</div>
 
         <div className="calendar-card__legend">
           <span>
