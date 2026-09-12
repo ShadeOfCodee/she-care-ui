@@ -198,18 +198,6 @@ const CyclePage = () => {
         </div>
 
 
-              {/* <div className="calendar-card__month">
-          <button type="button" aria-label="Previous month">
-          <ChevronLeft size={23} strokeWidth={3} />
-              </button>
-
-
-
-        <button type="button" aria-label="Next month">
-          <ChevronRight size={23} strokeWidth={3} />
-        </button>
-        </div> */}
-
         <button
           className="cycle-header__button"
           type="button"
