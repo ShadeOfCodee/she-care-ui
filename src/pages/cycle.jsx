@@ -353,10 +353,10 @@ const CyclePage = () => {
               Cycle: {record.cycle}
             </p>
 
-            <ChevronRight
+            {/* <ChevronRight
               className="record-card__arrow"
               size={23}
-            />
+            /> */}
           </article>
         ))}
       </section>

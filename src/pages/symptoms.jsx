@@ -335,7 +335,6 @@ const SymptomsPage = () => {
           <p className={styles.subtitle}>Log what matters today</p>
 
           <div className={styles.headerMeta}>
-            <p>March 18, 2026</p>
             <p><b>Day 12 - Luteal Phase</b></p>
           </div>
         </header>
