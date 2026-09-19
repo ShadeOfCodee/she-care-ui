@@ -27,7 +27,7 @@ const navItems = [
 
 const fallbackSummary = {
   userName: "SheCare Member",
-  moodLabel: "Great",
+  // moodLabel: "Great",
   cycle: {
     nextPeriodInDays: 15,
     cycleDay: 12
@@ -225,6 +225,8 @@ const Dashboard = ({ theme, onThemeChange }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isHydrationModalOpen, setIsHydrationModalOpen] = useState(false);
+  const [waterAmount, setWaterAmount] = useState(250);
   const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(localStorage.getItem("token")));
 
   useEffect(() => {
@@ -279,6 +281,26 @@ const Dashboard = ({ theme, onThemeChange }) => {
     return Math.min(100, Math.round((safeCurrent / safeGoal) * 100));
   }, [summary]);
 
+  useEffect(() => {
+    if (!isHydrationModalOpen) return undefined;
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") setIsHydrationModalOpen(false);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isHydrationModalOpen]);
+
+  const addWater = () => {
+    setSummary((current) => ({
+      ...current,
+      hydration: {
+        ...current.hydration,
+        current: Math.min(Number(current.hydration.goal), Number((current.hydration.current + waterAmount / 1000).toFixed(2)))
+      }
+    }));
+    setIsHydrationModalOpen(false);
+  };
+
   const cycleProgress = useMemo(() => {
     const day = Number(summary?.cycle?.cycleDay ?? 0);
     return Math.max(0, Math.min(100, Math.round((day / 28) * 100)));
@@ -319,10 +341,6 @@ const Dashboard = ({ theme, onThemeChange }) => {
           <div className="ml-auto">
             <ProfileIcon isOpen={isSidebarOpen} onClick={handleToggleSidebar} />
           </div>
-        </div>
-        <div className={styles.heroMeta}>
-          <span className={styles.datePill}>{new Date().toLocaleDateString()}</span>
-          <span className={styles.moodPill}>Mood: {selectedMood}</span>
         </div>
       </header>
 
@@ -416,7 +434,12 @@ const Dashboard = ({ theme, onThemeChange }) => {
       <section className={`${styles.sectionCard} ${styles.reveal}`}>
         <div className={styles.sectionHeader}>
           <h3>Hydration</h3>
-          <span>{hydrationPercent}%</span>
+          <div className={styles.hydrationHeaderActions}>
+            <span>{hydrationPercent}%</span>
+            <button type="button" className={styles.addHydrationButton} onClick={() => setIsHydrationModalOpen(true)} aria-label="Add water">
+              +
+            </button>
+          </div>
         </div>
         <div className={styles.progressTrack}>
           <div className={styles.progressFill} style={{ width: `${hydrationPercent}%` }} />
@@ -425,6 +448,40 @@ const Dashboard = ({ theme, onThemeChange }) => {
           {summary.hydration.current}L / {summary.hydration.goal}L
         </p>
       </section>
+
+      {isHydrationModalOpen && (
+        <div className={styles.modalOverlay} onMouseDown={() => setIsHydrationModalOpen(false)}>
+          <div className={styles.waterModal} role="dialog" aria-modal="true" aria-labelledby="water-modal-title" onMouseDown={(event) => event.stopPropagation()}>
+            <div className={styles.modalTitleRow}>
+              <div className={styles.waterIcon}>◆</div>
+              <div>
+                <h2 id="water-modal-title">Log Water Intake</h2>
+                <p>Keep yourself hydrated <span aria-hidden="true">♥</span></p>
+              </div>
+              <button type="button" className={styles.closeModalButton} onClick={() => setIsHydrationModalOpen(false)} aria-label="Close">×</button>
+            </div>
+
+            <div className={styles.intakeSummary}>
+              <div><span>Today's Intake</span><strong>{summary.hydration.current} L</strong><small>of {summary.hydration.goal} L goal</small></div>
+              <div className={styles.modalProgress}><b>{hydrationPercent}%</b><small>reached</small></div>
+            </div>
+
+            <div className={styles.addWaterHeading}><h3>Add Water</h3><span>1 cup = 250 ml</span></div>
+            <div className={styles.waterPresets}>
+              {[250, 500, 750, 1000].map((amount) => (
+                <button key={amount} type="button" className={`${styles.waterPreset} ${waterAmount === amount ? styles.waterPresetActive : ""}`} onClick={() => setWaterAmount(amount)}>
+                  <span className={styles.glassIcon} aria-hidden="true"><span className={styles.glassWater} /></span><b>{amount >= 1000 ? "1 L" : `${amount} ml`}</b>
+                </button>
+              ))}
+            </div>
+            <div className={styles.orDivider}><span>or</span></div>
+            <h3 className={styles.customAmountTitle}>Custom Amount</h3>
+            <div className={styles.customAmount}><button type="button" onClick={() => setWaterAmount((amount) => Math.max(50, amount - 50))}>−</button><strong>{waterAmount} <small>ml</small></strong><button type="button" onClick={() => setWaterAmount((amount) => amount + 50)}>+</button></div>
+            <div className={styles.goalNote}><span>♧</span><div><b>Daily goal: {summary.hydration.goal} L</b><small>You're doing great!</small></div></div>
+            <div className={styles.modalActions}><button type="button" className={styles.cancelButton} onClick={() => setIsHydrationModalOpen(false)}>Cancel</button><button type="button" className={styles.confirmButton} onClick={addWater}>Add</button></div>
+          </div>
+        </div>
+      )}
 
       <section className={`${styles.sectionCard} ${styles.reveal}`}>
         <div className={styles.sectionHeader}>

@@ -433,7 +433,7 @@ const AddDailyEntryPage = () => {
           </div>
         </section>
 
-        <section className={styles.card}>
+        {/* <section className={styles.card}>
           <SectionHeader icon="hydration" title="Hydration" />
           <div className={styles.sliderHeader}>
             <span>0L</span>
@@ -453,7 +453,7 @@ const AddDailyEntryPage = () => {
             className={styles.slider}
             aria-label="Hydration amount from 0 to 3 liters"
           />
-        </section>
+        </section> */}
 
         <section className={styles.card}>
           <SectionHeader icon="activity" title="Activity" />
